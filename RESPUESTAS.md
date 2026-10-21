@@ -446,10 +446,10 @@ a) ¿Por qué los hooks de Expo no se enteran solos de que el permiso cambió en
 *Respuesta: Cuando una app manda a un usuario a ajustes, la app queda en segundo plano, y al volver, el permiso pudo haber sufrido un cambio.*
 
 b) ¿Qué función del hook de cámara le pasarías a `useRevisarAlVolver`?
-*Respuesta: *
+*Respuesta: La función del hook de la cámara que le pasaría a useRevisarAlVolver es checkPermission.*
 
 c) ¿Por qué no conviene guardar el estado del permiso en un store global "para siempre"?
-*Respuesta:*
+*Respuesta: No conviene guardar el estado del permiso en un store global de forma permanente porque el estado de un permiso de hardware es volátil, externo a la app y puede cambiar sin que el código se entere.*
 
 ---
 
@@ -460,66 +460,77 @@ c) ¿Por qué no conviene guardar el estado del permiso en un store global "para
 
 | App y permiso | ¿Cuándo pedirlo? | Alternativa si lo deniegan |
 | :--- | :--- | :--- |
-| Delivery / ubicación | | |
-| Billetera virtual / cámara | | |
-| Red social / contactos | | |
-| Mensajería / micrófono | | |
-| Turnos médicos / notificaciones | | |
-| Editor de fotos / galería completa| | |
+| Delivery / ubicación | Cuando el usuario finaliza el pedido y debe seleccionar a dónde mandarlo | Ingresar una dirección manualmente |
+| Billetera virtual / cámara | Al momento de escanear algo o sacar una foto | Solicitar permiso de galería para subir fotos |
+| Red social / contactos | Cuando se pregunta si se quiere sincronizar la red social con los contactos | Dejar la opción dispnible mediante un botón |
+| Mensajería / micrófono | Cuando el usuario manda un audio de voz o grabar con el micrófono | Dejar la opción disponible mediante un botón |
+| Turnos médicos / notificaciones | Cuando se termina de solicitar un turno, preguntando si se quiere un recordatorio | Dejar la opción disponible mediante un botón |
+| Editor de fotos / galería completa| Cuando se ingresa por primera vez | Cuando el usuario vuelve a ingresar a la aplicación |
 
 ¿Por qué pedir cuatro permisos apenas se abre la app "entrena el No permitir automático"?
-*Respuesta:*
+*Respuesta: Un solo pedido en contexto conecta el permiso con algo que la persona acaba de querer hacer. Pedir cuatro permisos al abrir entrena el no permitir automático.*
 
 ### F2. La pantalla previa
 a) ¿Qué tres elementos tiene una buena pantalla previa al diálogo del sistema?
-*Respuesta:*
+*Respuesta: 
+El beneficio en una frase (lo mismo que dice el texto de propósito)
+Un solo botón "Continuar"
+Transparencia
+*
 
 b) ¿Por qué el botón debe decir "Continuar" y no "Permitir"?
-*Respuesta:*
+*Respuesta: Porque el permiso lo da el sistema, no el propio botón.*
 
 c) ¿Qué dice la pauta 5.1.1(iv) de Apple sobre botones como "Ahora no" o "Cerrar" en esa pantalla?
-*Respuesta:*
+*Respuesta: La pauta 5.1.1(iv) de la App Store de Apple exige que si la aplicación requiere registro o inicio de sesión para acceder a funciones básicas u ocultas, se debe proporcionar una cuenta de prueba válida (usuario y contraseña) dentro de App Store Connect en el apartado "Información para el equipo de revisión de Apps"*
 
 d) ¿Cómo cambia la pantalla si el permiso ya está bloqueado?
-*Respuesta:*
+*Respuesta: Si se bloquea un permiso y este no es esencial, nunca debería impedir el uso del resto de las funcionalidades.*
 
 ### F3. Mínimo privilegio
 **Para cada caso elegí la opción más chica que alcanza y justificá.**
 a) Ubicación precisa o aproximada para "puntos de reciclaje de tu barrio".
-*Respuesta:*
+*Respuesta: Buscar ubicación por ciudad, barrio o código postal, para así al menos poder usar la funcionalidad.*
 
 b) Ubicación "en uso" o "siempre" para "registrar una carrera con el celular en el bolsillo".
-*Respuesta:*
+*Respuesta: Acceso a la ubicación, para poder utilizarla ya sea siempre o mientras la aplicación está en uso.*
 
 c) Selector del sistema o permiso de galería para "subir la foto del DNI".
-*Respuesta:*
+*Respuesta: Acceso parcial a cámara, al menos "una vez"*
 
 d) `expo-camera` con o sin micrófono para "escanear el QR del aula".
-*Respuesta:*
+*Respuesta: Acceso parcial a cámara, sin micrófono, con "al menos una vez"*
 
 ### F4. Tiendas
 a) Nombrá dos requisitos de Google Play y dos de App Store relacionados con permisos y privacidad.
-*Respuesta:*
+*Respuesta: 
+De Google Play: 
+Fotos y videos: READ_MEDIA_ obligatoria soli si es la función principal.
+Target API 36 obligatorio desde el 31/08/2026
+De AppStore:
+No forzar ni manipular para conseguir el permiso (5.1.1(iv))
+Etiquetas de privacidad en App Store Contact
+*
 
 b) ¿Qué es el manifiesto de privacidad (`PrivacyInfo.xcprivacy`) y dónde se configura en Expo?
-*Respuesta:*
+*Respuesta: El manifiesto de privacidad (PrivacyInfo.xcprivacy) es un archivo de configuración obligatorio introducido por Apple. Su objetivo es declarar de forma transparente qué APIs sensibles (denominadas "APIs con razón requerida") utiliza tu aplicación, qué datos recolecta, si realiza seguimiento (tracking) del usuario y a qué dominios externos se conecta. Se configura en ios.privacyManifests*
 
 c) ¿Qué suma Android 17 y qué va a exigir Google Play desde el 27/01/2027 a las apps que hoy piden `READ_CONTACTS`?
-*Respuesta:*
+*Respuesta: Android 17 suma el permiso de red local y un selector de contactos del sistema. Google Play va a exigir ese selector a muchas apps que hoy piden READ_CONTACTS (obligatorio desde el 27/1/2027 para apps con target API 37)*
 
 ### F5. Errores comunes
 **Para cada situación explicá la causa y la solución:**
 a) La consola de Xcode muestra: "This app has crashed because it attempted to access privacy-sensitive data without a usage description."
-*Respuesta:*
+*Respuesta: Esto es porque falta el texto de propósito. Se debe configurar el plugin del módulo o ios.infoPlist en app.json y luego volver a compilar.*
 
 b) "En Expo Go anda, en la build no": en la development build la cámara se deniega sin mostrar ningún diálogo.
-*Respuesta:*
+*Respuesta: Expo Go trae sus propios permisos. En la build solo existe el que se declara en app.json*
 
 c) Después de habilitar la ubicación en Ajustes, la app sigue diciendo "bloqueado".
-*Respuesta:*
+*Respuesta: Si no se revisa el permiso al volver de Ajustes, la pantalla sigue diciendo "bloqueado" aunque ya esté habilitado.*
 
 d) La pantalla queda en "Pidiendo permiso..." para siempre porque el código llama a `request...()` cada vez que se renderiza.
-*Respuesta:*
+*Respuesta: Con canAskAgain: false, request...() vuelve al instante sin mostrar nada. Se debe detectar y ofrecer Ajustes*
 
 e) Una app de turnos no permite entrar a ninguna pantalla si se deniegan las notificaciones.
-*Respuesta:*
+*Respuesta: Si no hay un canal creado, Expo no muestra el diálogo. Se debe crear el canal antes de pedir el permiso.*

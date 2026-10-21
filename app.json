@@ -2,41 +2,45 @@
   "expo": {
     "name": "mantenimiento-ipf",
     "slug": "mantenimiento-ipf",
+    "scheme": "mantenimiento-ipf",
     "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "mantenimientoipf",
-    "userInterfaceStyle": "automatic",
-    "ios": {
-      "icon": "./assets/expo.icon"
-    },
     "android": {
-      "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
-      },
-      "predictiveBackGestureEnabled": false
-    },
-    "web": {
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO"
+      ]
     },
     "plugins": [
       "expo-router",
       [
-        "expo-splash-screen",
+        "expo-camera",
         {
-          "backgroundColor": "#208AEF",
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "cameraPermission": "Usamos tu cámara para leer el QR del aula.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
         }
-      ]
-    ],
-    "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
-    }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Usamos tu ubicación para marcar dónde está el problema.",
+          "locationAlwaysPermission": "Usamos tu ubicación para marcar dónde está el problema."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Usamos tu cámara para sacar una foto del desperfecto."
+        }
+      ],
+      "expo-notifications",
+      "expo-font",
+      "expo-image",
+      "expo-splash-screen",
+      "expo-status-bar",
+      "expo-web-browser"
+    ]
   }
 }
