@@ -4,7 +4,6 @@ import { usePermiso, Recurso } from '../../hooks/usePermiso';
 
 export default function PantallaPreviaPermiso() {
   const { recurso } = useLocalSearchParams<{ recurso: Recurso }>();
-  // Reutilizamos nuestro hook unificado
   const permiso = usePermiso(recurso);
 
   // Textos obligatorios que pide la cátedra

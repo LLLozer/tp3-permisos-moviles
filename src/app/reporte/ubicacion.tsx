@@ -1,81 +1,93 @@
+import { View, Text, Button, ActivityIndicator, StyleSheet } from 'react-native';
 import { useState, useEffect } from 'react';
-import { Linking, Platform } from 'react-native';
-import { useCameraPermissions } from 'expo-camera';
 import * as Location from 'expo-location';
-// COMENTADO PORQUE ROMPE EXPO GO:
-// import * as Notifications from 'expo-notifications';
+import { router } from 'expo-router';
+import { usePermiso } from '../../hooks/usePermiso';
 
-export type EstadoPermiso = 'cargando' | 'concedido' | 'preguntable' | 'bloqueado';
-export type Recurso = 'camara' | 'ubicacion' | 'notificaciones';
-
-export function usePermiso(recurso: Recurso) {
-  const [estado, setEstado] = useState<EstadoPermiso>('cargando');
-  const [indicadorParcial, setIndicadorParcial] = useState(false); // <-- AGREGADO
-  
-  const [permisoCamara, pedirPermisoCamara] = useCameraPermissions();
+export default function Ubicacion() {
+  const permiso = usePermiso('ubicacion');
+  const [coordenadas, setCoordenadas] = useState<{ lat: number; lon: number } | null>(null);
+  const [buscando, setBuscando] = useState(false);
 
   useEffect(() => {
     let montado = true;
-
-    async function cargarEstado() {
-      try {
-        if (recurso === 'camara') {
-          if (permisoCamara) {
-            setEstado(permisoCamara.granted ? 'concedido' : (permisoCamara.canAskAgain ? 'preguntable' : 'bloqueado'));
-            setIndicadorParcial(false);
-          }
-        } 
-        else if (recurso === 'ubicacion') {
-          const res = await Location.getForegroundPermissionsAsync();
+    
+    if (permiso.estado === 'concedido') {
+      setBuscando(true);
+      Location.getCurrentPositionAsync({})
+        .then((loc) => {
           if (montado) {
-            setEstado(res.granted ? 'concedido' : (res.canAskAgain ? 'preguntable' : 'bloqueado'));
-            
-            // Evaluamos si dio acceso aproximado (coarse)
-            const esAproximada = 
-              (Platform.OS === 'android' && res.android?.accuracy === 'coarse') ||
-              (Platform.OS === 'ios' && res.ios?.scope === 'whenInUse' && res.ios?.accuracy === 'coarse');
-              
-            setIndicadorParcial(!!esAproximada);
+            setCoordenadas({ lat: loc.coords.latitude, lon: loc.coords.longitude });
+            setBuscando(false);
           }
-        } 
-        /*
-        else if (recurso === 'notificaciones') {
-          const res = await Notifications.getPermissionsAsync();
-          if (montado) {
-            setEstado(res.granted ? 'concedido' : (res.canAskAgain ? 'preguntable' : 'bloqueado'));
-            setIndicadorParcial(false);
-          }
-        }
-        */
-      } catch (error) {
-        console.error("Error cargando permiso:", error);
-      }
+        })
+        .catch((err) => {
+          console.error(err);
+          if (montado) setBuscando(false);
+        });
     }
-
-    cargarEstado();
-
+    
     return () => { montado = false; };
-  }, [recurso, permisoCamara]); 
+  }, [permiso.estado]);
 
-  const pedir = async () => {
-    if (recurso === 'camara') {
-      await pedirPermisoCamara();
-    } else if (recurso === 'ubicacion') {
-      await Location.requestForegroundPermissionsAsync();
-      // Recargamos estado interno (forzamos re-render de la UI para Expo Location)
-      const res = await Location.getForegroundPermissionsAsync();
-      const esAproximada = 
-        (Platform.OS === 'android' && res.android?.accuracy === 'coarse') ||
-        (Platform.OS === 'ios' && res.ios?.scope === 'whenInUse' && res.ios?.accuracy === 'coarse');
-      setEstado(res.granted ? 'concedido' : (res.canAskAgain ? 'preguntable' : 'bloqueado'));
-      setIndicadorParcial(!!esAproximada);
-    } 
-  };
+  if (permiso.estado === 'cargando' || buscando) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" />
+        <Text style={{ marginTop: 10 }}>Obteniendo ubicación...</Text>
+      </View>
+    );
+  }
 
-  const abrirAjustes = () => {
-    Linking.openSettings();
-  };
+  if (permiso.estado === 'preguntable') {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.texto}>Necesitamos tu ubicación para marcar el problema.</Text>
+        <Button title="Continuar" onPress={() => router.push('/permisos/ubicacion')} />
+      </View>
+    );
+  }
 
-  // <-- AHORA DEVOLVEMOS EL INDICADOR PARCIAL
-  return { estado, indicadorParcial, pedir, abrirAjustes };
+  if (permiso.estado === 'bloqueado') {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.texto}>La ubicación está denegada.</Text>
+        <Button title="Abrir Ajustes" onPress={permiso.abrirAjustes} />
+        
+        <View style={styles.alternativaContainer}>
+          <Text style={{ marginBottom: 15, fontWeight: 'bold' }}>Alternativa: Elegir sector a mano</Text>
+          <Button title="Patio Central" onPress={() => router.back()} color="#666" />
+          <View style={{ marginTop: 10 }}>
+            <Button title="Estacionamiento" onPress={() => router.back()} color="#666" />
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.center}>
+      <Text style={styles.titulo}>Ubicación registrada</Text>
+      
+      {permiso.indicadorParcial ? (
+        <Text style={styles.coordenadas}>📍 Ubicación aproximada</Text>
+      ) : (
+        <Text style={styles.coordenadas}>
+          📍 Lat: {coordenadas?.lat?.toFixed(4)}, Lon: {coordenadas?.lon?.toFixed(4)}
+        </Text>
+      )}
+      
+      <View style={{ marginTop: 30 }}>
+        <Button title="Confirmar y Volver" onPress={() => router.back()} />
+      </View>
+    </View>
+  );
 }
+
+const styles = StyleSheet.create({
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  texto: { fontSize: 16, textAlign: 'center', marginBottom: 20 },
+  titulo: { fontSize: 20, fontWeight: 'bold', marginBottom: 15 },
+  coordenadas: { fontSize: 16, color: 'green', backgroundColor: '#e0ffe0', padding: 15, borderRadius: 8, overflow: 'hidden' },
+  alternativaContainer: { marginTop: 40, width: '100%', padding: 20, backgroundColor: '#f0f0f0', borderRadius: 10 }
+});

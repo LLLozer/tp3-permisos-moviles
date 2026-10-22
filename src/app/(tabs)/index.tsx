@@ -8,8 +8,14 @@ export default function Inicio() {
       
       {/* Lista simulada para cumplir la consigna G1 */}
       <View style={styles.lista}>
-        <Text>• Foco quemado (Pendiente)</Text>
-        <Text>• Canilla rota (En curso)</Text>
+        <View style={styles.itemLista}>
+          <Text>• Foco quemado (Pendiente)</Text>
+          <Button title="Ver" onPress={() => router.push('/reporte/1')} />
+        </View>
+        <View style={styles.itemLista}>
+          <Text>• Canilla rota (En curso)</Text>
+          <Button title="Ver" onPress={() => router.push('/reporte/2')} />
+        </View>
       </View>
 
       <Button 
@@ -32,5 +38,6 @@ export default function Inicio() {
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
   titulo: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
-  lista: { marginBottom: 30, alignItems: 'flex-start' }
+  lista: { marginBottom: 30, width: '100%', paddingHorizontal: 20 },
+  itemLista: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15, backgroundColor: '#f0f0f0', padding: 10, borderRadius: 8 }
 });
